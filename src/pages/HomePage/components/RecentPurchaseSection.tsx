@@ -2,9 +2,9 @@ import { Flex, styled } from 'styled-system/jsx';
 import { Spacing, Text, AsyncBoundary } from '@/ui-lib';
 
 import { getRecentProductList, type RecentProduct } from '../api/product';
-import { useExchangeRateOfCurrency } from '@/hooks/useCurrency';
+import { useExchangeRateOfCurrency } from '@/shared/hooks/useCurrency';
 import { useAtomValue } from 'jotai';
-import { currencyAtom } from '@/atoms/currency';
+import { currencyAtom } from '@/shared/atoms/currency';
 import { formatPriceWithCurrency } from '@/utils/currency';
 
 // TODO: 로딩, Error UI 보강

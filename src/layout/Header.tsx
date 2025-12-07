@@ -6,7 +6,7 @@ import Logo from '@/ui-lib/components/logo';
 import { useLocation, useNavigate } from 'react-router';
 import { Flex, styled } from 'styled-system/jsx';
 import { flex } from 'styled-system/patterns';
-import { currencyAtom } from '@/atoms/currency';
+import { currencyAtom } from '@/shared/atoms/currency';
 
 export function Header() {
   const [currency, setCurrency] = useAtom(currencyAtom);

@@ -1,8 +1,8 @@
 import { useAtomValue } from 'jotai';
 import { useSuspenseQuery } from '@tanstack/react-query';
 
-import { currencyAtom } from '@/atoms/currency';
-import { getExchangeRate } from '@/api/currency';
+import { currencyAtom } from '@/shared/atoms/currency';
+import { getExchangeRate } from '@/shared/api/currency';
 
 export function useExchangeRateOfCurrency({ price }: { price: number }) {
   const currency = useAtomValue(currencyAtom);
