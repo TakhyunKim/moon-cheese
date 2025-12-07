@@ -51,12 +51,8 @@ function ProductCard({ product, bottomSlot }: { product: Product; bottomSlot: Re
 
   const navigate = useNavigate();
 
-  const handleClickProduct = (productId: number) => {
-    navigate(`/product/${productId}`);
-  };
-
   return (
-    <ProductItem.Root key={product.id} onClick={() => handleClickProduct(product.id)}>
+    <ProductItem.Root key={product.id} onClick={() => navigate(`/product/${product.id}`)}>
       <ProductItem.Image src={product.images[0]} alt={product.name} />
       <ProductItem.Info title={product.name} description={product.description} />
       <ProductItem.Meta>
