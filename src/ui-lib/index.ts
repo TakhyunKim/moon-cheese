@@ -1,4 +1,5 @@
 // Components
+export { default as AsyncBoundary } from './components/async-boundary';
 export { default as Badge } from './components/badge';
 export { default as Button } from './components/button';
 export { default as Counter } from './components/counter';
