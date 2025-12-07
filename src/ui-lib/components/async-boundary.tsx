@@ -1,9 +1,12 @@
 import { type UseSuspenseQueryOptions, useSuspenseQuery } from '@tanstack/react-query';
 import { type ReactNode, Suspense } from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 
 type AsyncBoundaryProps<TQueryFnData = unknown, TError = Error, TData = TQueryFnData> = {
   /** Suspense fallback UI (로딩 중 표시할 컴포넌트) */
   fallback?: ReactNode;
+  /** Error fallback UI (에러 발생 시 표시할 컴포넌트) */
+  errorFallback?: ReactNode;
   /** render props: 데이터를 받아서 렌더링 */
   children: (data: TData) => ReactNode;
 } & Omit<UseSuspenseQueryOptions<TQueryFnData, TError, TData>, 'select'> & {
@@ -25,14 +28,17 @@ type AsyncBoundaryProps<TQueryFnData = unknown, TError = Error, TData = TQueryFn
  * ```
  */
 function AsyncBoundary<TQueryFnData = unknown, TError = Error, TData = TQueryFnData>({
-  fallback,
+  fallback = <div>Loading...</div>,
+  errorFallback = <div>Error</div>,
   children,
   ...queryOptions
 }: AsyncBoundaryProps<TQueryFnData, TError, TData>) {
   return (
-    <Suspense fallback={fallback}>
-      <AsyncBoundaryInner<TQueryFnData, TError, TData> {...queryOptions}>{children}</AsyncBoundaryInner>
-    </Suspense>
+    <ErrorBoundary fallback={errorFallback}>
+      <Suspense fallback={fallback}>
+        <AsyncBoundaryInner<TQueryFnData, TError, TData> {...queryOptions}>{children}</AsyncBoundaryInner>
+      </Suspense>
+    </ErrorBoundary>
   );
 }
 
