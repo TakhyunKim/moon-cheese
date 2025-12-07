@@ -2,10 +2,11 @@ import { Counter, SubGNB, Text, AsyncBoundary } from '@/ui-lib';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Box, Grid, styled } from 'styled-system/jsx';
-import { useAtomValue } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { currencyAtom } from '@/shared/atoms/currency';
 import { useExchangeRateOfCurrency } from '@/shared/hooks/useCurrency';
 import { formatPriceWithCurrency } from '@/utils/currency';
+import { cartAtom, decrementItemAtom, incrementItemAtom } from '@/shared/atoms/cart';
 
 import ProductItem from '../components/ProductItem';
 import { getProductList, type Product } from '../api/product';
@@ -32,14 +33,18 @@ function ProductListSection() {
       </SubGNB.Root>
       <Grid gridTemplateColumns="repeat(2, 1fr)" rowGap={9} columnGap={4} p={5}>
         <AsyncBoundary {...productListQueryOptions(currentTab)}>
-          {products => products.map(product => <ProductCard key={product.id} product={product} />)}
+          {products =>
+            products.map(product => (
+              <ProductCard key={product.id} product={product} bottomSlot={<CartCounter product={product} />} />
+            ))
+          }
         </AsyncBoundary>
       </Grid>
     </styled.section>
   );
 }
 
-function ProductCard({ product }: { product: Product }) {
+function ProductCard({ product, bottomSlot }: { product: Product; bottomSlot: React.ReactNode }) {
   const currency = useAtomValue(currencyAtom);
   const exchangeRate = useExchangeRateOfCurrency({ price: product.price });
   const formattedPrice = formatPriceWithCurrency({ price: exchangeRate, currency });
@@ -62,13 +67,38 @@ function ProductCard({ product }: { product: Product }) {
         {/** TODO: 명시적이진 않은데, 노출해야할 정도로 중요도가 높은가? 이렇게 분리해도 무방하지 않을까? */}
         <ProductItemFreeTag product={product} />
       </ProductItem.Meta>
-      <Counter.Root>
-        <Counter.Minus onClick={() => {}} disabled={true} />
-        <Counter.Display value={1} />
-        <Counter.Plus onClick={() => {}} />
-      </Counter.Root>
+      {bottomSlot}
     </ProductItem.Root>
   );
+}
+
+function CartCounter({ product }: { product: Product }) {
+  const { quantity, decrement, increment } = useCartCounter({ product });
+  const isOverThanStock = quantity >= product.stock;
+  const isLessThanOne = quantity < 1;
+
+  return (
+    <Counter.Root>
+      <Counter.Minus onClick={decrement} disabled={isLessThanOne} />
+      <Counter.Display value={quantity} />
+      <Counter.Plus disabled={isOverThanStock} onClick={increment} />
+    </Counter.Root>
+  );
+}
+
+function useCartCounter({ product }: { product: Product }) {
+  const cart = useAtomValue(cartAtom);
+  const increment = useSetAtom(incrementItemAtom);
+  const decrement = useSetAtom(decrementItemAtom);
+
+  const cartItem = cart.find(i => i.productId === product.id);
+  const quantity = cartItem?.quantity ?? 0;
+
+  return {
+    quantity,
+    decrement: () => decrement(product.id),
+    increment: () => increment(product.id),
+  };
 }
 
 function ProductItemFreeTag({ product }: { product: Product }) {
