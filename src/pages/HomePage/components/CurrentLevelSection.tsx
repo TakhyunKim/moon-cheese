@@ -4,6 +4,7 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 
 import { getGradePointList, getMe } from '../domain/grade/api';
 
+// TODO: 로딩, Error UI 보강
 function CurrentLevelSection() {
   const { data: me } = useSuspenseQuery({
     queryKey: ['me'],

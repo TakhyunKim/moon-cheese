@@ -3,6 +3,8 @@ import { Spacing, Text, AsyncBoundary } from '@/ui-lib';
 
 import { getRecentProductList } from '../domain/product/api';
 
+// TODO: 로딩, Error UI 보강
+// TODO: 최근 구매한 상품이 없을 때 빈 상태 표시
 function RecentPurchaseSection() {
   return (
     <styled.section css={{ px: 5, pt: 4, pb: 8 }}>
