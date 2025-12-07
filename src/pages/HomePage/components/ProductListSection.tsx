@@ -59,6 +59,8 @@ function ProductCard({ product }: { product: Product }) {
           <ProductItem.Rating rating={product.rating} />
           <ProductItem.Price>{formattedPrice}</ProductItem.Price>
         </ProductItem.MetaLeft>
+        {/** TODO: 명시적이진 않은데, 노출해야할 정도로 중요도가 높은가? 이렇게 분리해도 무방하지 않을까? */}
+        <ProductItemFreeTag product={product} />
       </ProductItem.Meta>
       <Counter.Root>
         <Counter.Minus onClick={() => {}} disabled={true} />
@@ -67,6 +69,19 @@ function ProductCard({ product }: { product: Product }) {
       </Counter.Root>
     </ProductItem.Root>
   );
+}
+
+function ProductItemFreeTag({ product }: { product: Product }) {
+  switch (product.category) {
+    case 'CHEESE':
+      return null;
+    case 'CRACKER':
+      return product.isGlutenFree ? <ProductItem.FreeTag type={'gluten'} /> : null;
+    case 'TEA':
+      return product.isCaffeineFree ? <ProductItem.FreeTag type={'caffeine'} /> : null;
+    default:
+      return null;
+  }
 }
 
 const productListQueryOptions = (category: Category): UseSuspenseQueryOptions<Product[], Error> => ({
