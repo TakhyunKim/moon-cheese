@@ -2,7 +2,7 @@ import { Box, Flex, styled } from 'styled-system/jsx';
 import { ProgressBar, Spacing, Text } from '@/ui-lib';
 import { useSuspenseQuery } from '@tanstack/react-query';
 
-import { getGradePointList, getMe } from '../domain/grade/api';
+import { getGradePointList, getMe } from '../api/grade';
 
 // TODO: 로딩, Error UI 보강
 function CurrentLevelSection() {

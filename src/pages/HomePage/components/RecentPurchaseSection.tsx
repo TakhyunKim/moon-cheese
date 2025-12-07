@@ -1,7 +1,7 @@
 import { Flex, styled } from 'styled-system/jsx';
 import { Spacing, Text, AsyncBoundary } from '@/ui-lib';
 
-import { getRecentProductList, type RecentProduct } from '../domain/product/api';
+import { getRecentProductList, type RecentProduct } from '../api/product';
 import { useExchangeRateOfCurrency } from '@/hooks/useCurrency';
 import { useAtomValue } from 'jotai';
 import { currencyAtom } from '@/atoms/currency';
