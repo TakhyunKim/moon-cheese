@@ -32,7 +32,7 @@ function ProductListSection() {
         </SubGNB.List>
       </SubGNB.Root>
       <Grid gridTemplateColumns="repeat(2, 1fr)" rowGap={9} columnGap={4} p={5}>
-        <AsyncBoundary {...productListQueryOptions(currentTab)}>
+        <AsyncBoundary {...productListQueryOptions({ category: currentTab })}>
           {products =>
             products.map(product => (
               <ProductCard key={product.id} product={product} bottomSlot={<CartCounter product={product} />} />
@@ -110,7 +110,7 @@ function ProductItemFreeTag({ product }: { product: Product }) {
   }
 }
 
-const productListQueryOptions = (category: Category): UseSuspenseQueryOptions<Product[], Error> => ({
+const productListQueryOptions = ({ category }: { category: Category }): UseSuspenseQueryOptions<Product[], Error> => ({
   queryKey: ['productList'],
   queryFn: getProductList,
   select: data => data.filter((product: Product) => product.category === category || category === 'all'),
