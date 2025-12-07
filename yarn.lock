@@ -5162,6 +5162,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jotai@npm:^2.15.2":
+  version: 2.15.2
+  resolution: "jotai@npm:2.15.2"
+  peerDependencies:
+    "@babel/core": ">=7.0.0"
+    "@babel/template": ">=7.0.0"
+    "@types/react": ">=17.0.0"
+    react: ">=17.0.0"
+  peerDependenciesMeta:
+    "@babel/core":
+      optional: true
+    "@babel/template":
+      optional: true
+    "@types/react":
+      optional: true
+    react:
+      optional: true
+  checksum: 10c0/b8ffd26f8429d5512aa4f5204027a9ae43da5229f28e8e16df0558f5cbde56c2c5149883354ea977cba4a1e89f566d19cc37324dd3df53741582a38c8ad31d5a
+  languageName: node
+  linkType: hard
+
 "js-tokens@npm:^3.0.0 || ^4.0.0, js-tokens@npm:^4.0.0":
   version: 4.0.0
   resolution: "js-tokens@npm:4.0.0"
@@ -5751,6 +5772,7 @@ __metadata:
     eslint-plugin-react-refresh: "npm:^0.4.20"
     globals: "npm:^16.3.0"
     happy-dom: "npm:^18.0.1"
+    jotai: "npm:^2.15.2"
     lucide-react: "npm:^0.525.0"
     msw: "npm:^2.10.4"
     prettier: "npm:^3.6.2"
