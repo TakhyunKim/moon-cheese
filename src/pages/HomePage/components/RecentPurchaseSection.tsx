@@ -1,19 +1,9 @@
 import { Flex, styled } from 'styled-system/jsx';
-import { Spacing, Text } from '@/ui-lib';
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { Spacing, Text, AsyncBoundary } from '@/ui-lib';
 
 import { getRecentProductList } from '../domain/product/api';
 
 function RecentPurchaseSection() {
-  const { data: recentProductList } = useSuspenseQuery({
-    queryKey: ['recentProductList'],
-    queryFn: getRecentProductList,
-  });
-
-  if (recentProductList.length === 0) {
-    return <EmptyRecentPurchaseSection />;
-  }
-
   return (
     <styled.section css={{ px: 5, pt: 4, pb: 8 }}>
       <Text variant="H1_Bold">최근 구매한 상품</Text>
@@ -30,40 +20,41 @@ function RecentPurchaseSection() {
         }}
         direction={'column'}
       >
-        {recentProductList.map(product => (
-          <Flex
-            key={product.id}
-            css={{
-              gap: 4,
-            }}
-          >
-            <styled.img
-              src={product.thumbnail}
-              alt="item"
-              css={{
-                w: '60px',
-                h: '60px',
-                objectFit: 'cover',
-                rounded: 'xl',
-              }}
-            />
-            <Flex flexDir="column" gap={1}>
-              <Text variant="B2_Medium">{product.name}</Text>
-              <Text variant="H1_Bold">{product.price}</Text>
-            </Flex>
-          </Flex>
-        ))}
+        <AsyncBoundary {...recentProductListQueryOptions}>
+          {recentProductList =>
+            recentProductList.map(product => (
+              <Flex
+                key={product.id}
+                css={{
+                  gap: 4,
+                }}
+              >
+                <styled.img
+                  src={product.thumbnail}
+                  alt="item"
+                  css={{
+                    w: '60px',
+                    h: '60px',
+                    objectFit: 'cover',
+                    rounded: 'xl',
+                  }}
+                />
+                <Flex flexDir="column" gap={1}>
+                  <Text variant="B2_Medium">{product.name}</Text>
+                  <Text variant="H1_Bold">{product.price}</Text>
+                </Flex>
+              </Flex>
+            ))
+          }
+        </AsyncBoundary>
       </Flex>
     </styled.section>
   );
 }
 
-function EmptyRecentPurchaseSection() {
-  return (
-    <styled.div p={5} aspectRatio={1} bgColor="background.01_white">
-      <Text variant="B2_Bold">최근 구매한 상품이 없어요</Text>
-    </styled.div>
-  );
-}
+const recentProductListQueryOptions = {
+  queryKey: ['recentProductList'] as const,
+  queryFn: getRecentProductList,
+};
 
 export default RecentPurchaseSection;
