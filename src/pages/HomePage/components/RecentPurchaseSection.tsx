@@ -1,6 +1,15 @@
 import { Flex, styled } from 'styled-system/jsx';
-import { Spacing, Text } from '@/ui-lib';
+import { Spacing, Text, AsyncBoundary } from '@/ui-lib';
 
+import { getRecentProductList, type RecentProduct } from '../api/product';
+import { useExchangeRateOfCurrency } from '@/shared/hooks/useCurrency';
+import { useAtomValue } from 'jotai';
+import { currencyAtom } from '@/shared/atoms/currency';
+import { formatPriceWithCurrency } from '@/utils/currency';
+
+// TODO: 로딩, Error UI 보강
+// TODO: 최근 구매한 상품이 없을 때 빈 상태 표시
+// TODO: 최근 구매한 상품 클릭 시 detail page 로 이동
 function RecentPurchaseSection() {
   return (
     <styled.section css={{ px: 5, pt: 4, pb: 8 }}>
@@ -18,50 +27,49 @@ function RecentPurchaseSection() {
         }}
         direction={'column'}
       >
-        <Flex
-          css={{
-            gap: 4,
-          }}
-        >
-          <styled.img
-            src="/moon-cheese-images/cheese-1-1.jpg"
-            alt="item"
-            css={{
-              w: '60px',
-              h: '60px',
-              objectFit: 'cover',
-              rounded: 'xl',
-            }}
-          />
-          <Flex flexDir="column" gap={1}>
-            <Text variant="B2_Medium">월레스의 오리지널 웬슬리데일</Text>
-            <Text variant="H1_Bold">$12.99</Text>
-          </Flex>
-        </Flex>
-
-        <Flex
-          css={{
-            gap: 4,
-          }}
-        >
-          <styled.img
-            src="/moon-cheese-images/cheese-2-1.jpg"
-            alt="item"
-            css={{
-              w: '60px',
-              h: '60px',
-              objectFit: 'cover',
-              rounded: 'xl',
-            }}
-          />
-          <Flex flexDir="column" gap={1}>
-            <Text variant="B2_Medium">그랜드 데이 아웃 체다</Text>
-            <Text variant="H1_Bold">$14.87</Text>
-          </Flex>
-        </Flex>
+        <AsyncBoundary {...recentProductListQueryOptions}>
+          {recentProductList =>
+            recentProductList.map(product => <RecentPurchaseProductItem key={product.id} product={product} />)
+          }
+        </AsyncBoundary>
       </Flex>
     </styled.section>
   );
 }
+
+function RecentPurchaseProductItem({ product }: { product: RecentProduct }) {
+  // TODO: 3가지 요소를 묶는 커스텀 훅 개발
+  const currency = useAtomValue(currencyAtom);
+  const exchangeRate = useExchangeRateOfCurrency({ price: product.price });
+  const formattedPrice = formatPriceWithCurrency({ price: exchangeRate, currency });
+
+  return (
+    <Flex
+      css={{
+        gap: 4,
+      }}
+    >
+      <styled.img
+        src={product.thumbnail}
+        alt="item"
+        css={{
+          w: '60px',
+          h: '60px',
+          objectFit: 'cover',
+          rounded: 'xl',
+        }}
+      />
+      <Flex flexDir="column" gap={1}>
+        <Text variant="B2_Medium">{product.name}</Text>
+        <Text variant="H1_Bold">{formattedPrice}</Text>
+      </Flex>
+    </Flex>
+  );
+}
+
+const recentProductListQueryOptions = {
+  queryKey: ['recentProductList'],
+  queryFn: getRecentProductList,
+};
 
 export default RecentPurchaseSection;

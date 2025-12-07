@@ -1,83 +1,119 @@
-import { Counter, SubGNB, Text } from '@/ui-lib';
+import { Counter, SubGNB, Text, AsyncBoundary } from '@/ui-lib';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Box, Grid, styled } from 'styled-system/jsx';
+import { useAtomValue, useSetAtom } from 'jotai';
+import { currencyAtom } from '@/shared/atoms/currency';
+import { useExchangeRateOfCurrency } from '@/shared/hooks/useCurrency';
+import { formatPriceWithCurrency } from '@/utils/currency';
+import { cartAtom, decrementItemAtom, incrementItemAtom } from '@/shared/atoms/cart';
+
 import ProductItem from '../components/ProductItem';
+import { getProductList, type Product } from '../api/product';
+
+import type { UseSuspenseQueryOptions } from '@tanstack/react-query';
+
+type Category = 'all' | 'CHEESE' | 'CRACKER' | 'TEA';
 
 function ProductListSection() {
-  const [currentTab, setCurrentTab] = useState('all');
-  const navigate = useNavigate();
-
-  const handleClickProduct = (productId: number) => {
-    navigate(`/product/${productId}`);
-  };
+  const [currentTab, setCurrentTab] = useState<Category>('all');
 
   return (
     <styled.section bg="background.01_white">
       <Box css={{ px: 5, pt: 5, pb: 4 }}>
         <Text variant="H1_Bold">판매중인 상품</Text>
       </Box>
-      <SubGNB.Root value={currentTab} onValueChange={details => setCurrentTab(details.value)}>
+      <SubGNB.Root value={currentTab} onValueChange={details => setCurrentTab(details.value as Category)}>
         <SubGNB.List>
           <SubGNB.Trigger value="all">전체</SubGNB.Trigger>
-          <SubGNB.Trigger value="cheese">치즈</SubGNB.Trigger>
-          <SubGNB.Trigger value="cracker">크래커</SubGNB.Trigger>
-          <SubGNB.Trigger value="tea">티</SubGNB.Trigger>
+          <SubGNB.Trigger value="CHEESE">치즈</SubGNB.Trigger>
+          <SubGNB.Trigger value="CRACKER">크래커</SubGNB.Trigger>
+          <SubGNB.Trigger value="TEA">티</SubGNB.Trigger>
         </SubGNB.List>
       </SubGNB.Root>
       <Grid gridTemplateColumns="repeat(2, 1fr)" rowGap={9} columnGap={4} p={5}>
-        <ProductItem.Root onClick={() => handleClickProduct(1)}>
-          <ProductItem.Image src="/moon-cheese-images/cheese-1-1.jpg" alt="월레스의 오리지널 웬슬리데일" />
-          <ProductItem.Info title="월레스의 오리지널 웬슬리데일" description="월레스가 아침마다 찾는 바로 그 치즈!" />
-          <ProductItem.Meta>
-            <ProductItem.MetaLeft>
-              <ProductItem.Rating rating={4} />
-              <ProductItem.Price>$12.99</ProductItem.Price>
-            </ProductItem.MetaLeft>
-          </ProductItem.Meta>
-          <Counter.Root>
-            <Counter.Minus onClick={() => {}} disabled={true} />
-            <Counter.Display value={3} />
-            <Counter.Plus onClick={() => {}} />
-          </Counter.Root>
-        </ProductItem.Root>
-
-        <ProductItem.Root onClick={() => handleClickProduct(2)}>
-          <ProductItem.Image src="/moon-cheese-images/cracker-1-1.jpg" alt="로봇 크런치 비스킷" />
-          <ProductItem.Info title="로봇 크런치 비스킷" description="로봇 캐릭터 모양의 귀리 비스킷" />
-          <ProductItem.Meta>
-            <ProductItem.MetaLeft>
-              <ProductItem.Rating rating={3} />
-              <ProductItem.Price>5.00</ProductItem.Price>
-            </ProductItem.MetaLeft>
-            <ProductItem.FreeTag type="gluten" />
-          </ProductItem.Meta>
-          <Counter.Root>
-            <Counter.Minus onClick={() => {}} disabled={true} />
-            <Counter.Display value={3} />
-            <Counter.Plus onClick={() => {}} />
-          </Counter.Root>
-        </ProductItem.Root>
-
-        <ProductItem.Root onClick={() => handleClickProduct(3)}>
-          <ProductItem.Image src="/moon-cheese-images/tea-1-1.jpg" alt="문라이트 카모마일 티" />
-          <ProductItem.Info title="문라이트 카모마일 티" description="달빛 같은 부드러운 허브차" />
-          <ProductItem.Meta>
-            <ProductItem.MetaLeft>
-              <ProductItem.Rating rating={5} />
-              <ProductItem.Price>$7.00</ProductItem.Price>
-            </ProductItem.MetaLeft>
-            <ProductItem.FreeTag type="caffeine" />
-          </ProductItem.Meta>
-          <Counter.Root>
-            <Counter.Minus onClick={() => {}} disabled={true} />
-            <Counter.Display value={3} />
-            <Counter.Plus onClick={() => {}} />
-          </Counter.Root>
-        </ProductItem.Root>
+        <AsyncBoundary {...productListQueryOptions({ category: currentTab })}>
+          {products =>
+            products.map(product => (
+              <ProductCard key={product.id} product={product} bottomSlot={<CartCounter product={product} />} />
+            ))
+          }
+        </AsyncBoundary>
       </Grid>
     </styled.section>
   );
 }
+
+function ProductCard({ product, bottomSlot }: { product: Product; bottomSlot: React.ReactNode }) {
+  const currency = useAtomValue(currencyAtom);
+  const exchangeRate = useExchangeRateOfCurrency({ price: product.price });
+  const formattedPrice = formatPriceWithCurrency({ price: exchangeRate, currency });
+
+  const navigate = useNavigate();
+
+  return (
+    <ProductItem.Root key={product.id} onClick={() => navigate(`/product/${product.id}`)}>
+      <ProductItem.Image src={product.images[0]} alt={product.name} />
+      <ProductItem.Info title={product.name} description={product.description} />
+      <ProductItem.Meta>
+        <ProductItem.MetaLeft>
+          <ProductItem.Rating rating={product.rating} />
+          <ProductItem.Price>{formattedPrice}</ProductItem.Price>
+        </ProductItem.MetaLeft>
+        {/** TODO: 명시적이진 않은데, 노출해야할 정도로 중요도가 높은가? 이렇게 분리해도 무방하지 않을까? */}
+        <ProductItemFreeTag product={product} />
+      </ProductItem.Meta>
+      {bottomSlot}
+    </ProductItem.Root>
+  );
+}
+
+function CartCounter({ product }: { product: Product }) {
+  const { quantity, decrement, increment } = useCartCounter({ product });
+  const isOverThanStock = quantity >= product.stock;
+  const isLessThanOne = quantity < 1;
+
+  return (
+    <Counter.Root>
+      <Counter.Minus onClick={decrement} disabled={isLessThanOne} />
+      <Counter.Display value={quantity} />
+      <Counter.Plus disabled={isOverThanStock} onClick={increment} />
+    </Counter.Root>
+  );
+}
+
+function useCartCounter({ product }: { product: Product }) {
+  const cart = useAtomValue(cartAtom);
+  const increment = useSetAtom(incrementItemAtom);
+  const decrement = useSetAtom(decrementItemAtom);
+
+  const cartItem = cart.find(i => i.productId === product.id);
+  const quantity = cartItem?.quantity ?? 0;
+
+  return {
+    quantity,
+    decrement: () => decrement(product.id),
+    increment: () => increment(product.id),
+  };
+}
+
+function ProductItemFreeTag({ product }: { product: Product }) {
+  switch (product.category) {
+    case 'CHEESE':
+      return null;
+    case 'CRACKER':
+      return product.isGlutenFree ? <ProductItem.FreeTag type={'gluten'} /> : null;
+    case 'TEA':
+      return product.isCaffeineFree ? <ProductItem.FreeTag type={'caffeine'} /> : null;
+    default:
+      return null;
+  }
+}
+
+const productListQueryOptions = ({ category }: { category: Category }): UseSuspenseQueryOptions<Product[], Error> => ({
+  queryKey: ['productList'],
+  queryFn: getProductList,
+  select: data => data.filter((product: Product) => product.category === category || category === 'all'),
+});
 
 export default ProductListSection;
