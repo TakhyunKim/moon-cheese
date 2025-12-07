@@ -38,6 +38,7 @@ function RecentPurchaseSection() {
 }
 
 function RecentPurchaseProductItem({ product }: { product: RecentProduct }) {
+  // TODO: 3가지 요소를 묶는 커스텀 훅 개발
   const currency = useAtomValue(currencyAtom);
   const exchangeRate = useExchangeRateOfCurrency({ price: product.price });
   const formattedPrice = formatPriceWithCurrency({ price: exchangeRate, currency });
