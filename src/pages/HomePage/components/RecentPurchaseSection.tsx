@@ -5,6 +5,7 @@ import { getRecentProductList, type RecentProduct } from '../domain/product/api'
 import { useExchangeRateOfCurrency } from '@/hooks/useCurrency';
 import { useAtomValue } from 'jotai';
 import { currencyAtom } from '@/atoms/currency';
+import { formatPriceWithCurrency } from '@/utils/currency';
 
 // TODO: 로딩, Error UI 보강
 // TODO: 최근 구매한 상품이 없을 때 빈 상태 표시
@@ -39,6 +40,7 @@ function RecentPurchaseSection() {
 function RecentPurchaseProductItem({ product }: { product: RecentProduct }) {
   const currency = useAtomValue(currencyAtom);
   const exchangeRate = useExchangeRateOfCurrency({ price: product.price });
+  const formattedPrice = formatPriceWithCurrency({ price: exchangeRate, currency });
 
   return (
     <Flex
@@ -58,7 +60,7 @@ function RecentPurchaseProductItem({ product }: { product: RecentProduct }) {
       />
       <Flex flexDir="column" gap={1}>
         <Text variant="B2_Medium">{product.name}</Text>
-        <Text variant="H1_Bold">{currency === 'USD' ? `$${exchangeRate}` : `${exchangeRate}원`}</Text>
+        <Text variant="H1_Bold">{formattedPrice}</Text>
       </Flex>
     </Flex>
   );
