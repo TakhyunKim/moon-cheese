@@ -68,7 +68,7 @@ function RecentPurchaseProductItem({ product }: { product: RecentProduct }) {
 }
 
 const recentProductListQueryOptions = {
-  queryKey: ['recentProductList'] as const,
+  queryKey: ['recentProductList'],
   queryFn: getRecentProductList,
 };
 
