@@ -1,14 +1,15 @@
+import { useAtom } from 'jotai';
 import Badge from '@/ui-lib/components/badge';
-import CurrencyToggle, { type CurrencyType } from '@/ui-lib/components/currency-toggle';
+import CurrencyToggle from '@/ui-lib/components/currency-toggle';
 import { ArrowLeftIcon, ShoppingCartIcon } from '@/ui-lib/components/icons';
 import Logo from '@/ui-lib/components/logo';
-import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { Flex, styled } from 'styled-system/jsx';
 import { flex } from 'styled-system/patterns';
+import { currencyAtom } from '@/atoms/currency';
 
 export function Header() {
-  const [currency, setCurrency] = useState<CurrencyType>('USD');
+  const [currency, setCurrency] = useAtom(currencyAtom);
   const location = useLocation();
 
   const isRootRoute = location.pathname === '/';
